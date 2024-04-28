@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public class VRHelicoptorController : MonoBehaviour
+public class VRHelicopterController : MonoBehaviour
 {
     public Transform playerController;
 
@@ -187,6 +187,7 @@ public class VRHelicoptorController : MonoBehaviour
                 tempX = Time.fixedDeltaTime;
         }
 
+        // I want to change it to normal function without input so i can assign in to a button in the scene
         if (playerController.parent == transform)
         {
             if (OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger) > 0)    // turn right right trigger
@@ -199,7 +200,7 @@ public class VRHelicoptorController : MonoBehaviour
                 }
             }
 
-
+        // I want to change it to normal function without input so i can assign in to a button in the scene
             if (OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger) > 0) // turn left left trigger
             {
                 if (!IsOnGround)
