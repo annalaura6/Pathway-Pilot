@@ -11,7 +11,7 @@ public class VRHelicopterController : MonoBehaviour
     public HeliRotorController MainRotorController;
     public HeliRotorController SubRotorController;
 
-    private bool startItUp;
+    public bool startItUp;
 
 
     private float leverValue;
@@ -44,6 +44,8 @@ public class VRHelicopterController : MonoBehaviour
 
     private Vector3 initialPosition;
     private Quaternion initialRotation;
+    
+    public float MaxEngineForce = 300f;
 
     public float EngineForce
     {
@@ -279,7 +281,7 @@ public class VRHelicopterController : MonoBehaviour
 
     }
 
-    public void MoveUpDown(Vector2 LeverVector)
+    /*public void MoveUpDown(Vector2 LeverVector)
     {
         if(LeverVector.y < 0)
         {
@@ -300,6 +302,16 @@ public class VRHelicopterController : MonoBehaviour
             {
                 EngineForce = (leverValue * 300) + 50;
             }
+        }
+    }*/
+    
+    public void MoveUpDown(Vector2 LeverVector)
+    {
+        // Assuming LeverVector.y is normalized between 0 and 1
+        if (LeverVector.y >= 0 && startItUp)
+        {
+            // This maps the lever value (0 to 1) to the engine force range (50 to MaxEngineForce)
+            EngineForce = Mathf.Lerp(50, MaxEngineForce, LeverVector.y);
         }
     }
 
