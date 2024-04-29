@@ -9,10 +9,10 @@ public class HelicopterController : MonoBehaviour
     public HeliRotorController MainRotorController;
     public HeliRotorController SubRotorController;
 
-    public float TurnForce = 3f;
-    public float ForwardForce = 10f;
+    public float TurnForce = 1f;
+    public float ForwardForce = 5f;
     public float ForwardTiltForce = 20f;
-    public float TurnTiltForce = 30f;
+    public float TurnTiltForce = 10f;
     public float EffectiveHeight = 100f;
 
     public float turnTiltForcePercent = 1.5f;
@@ -52,47 +52,74 @@ public class HelicopterController : MonoBehaviour
         MoveProcess();
         TiltProcess();
     }
-
-    public void MoveForward()
-    {
-        hMove.y = 0.2f;
-    }
-
-    public void MoveBackwards()
-    {
-        hMove.y = -0.2f;
-    }
-
-    public void StopVerticalMovement()
-    {
-        hMove.y = 0f;
-    }
-
-    public void TurnLeft()
-    {
-        hMove.x = -0.1f;
-    }
-
-    public void TurnRight()
-    {
-        hMove.x = 0.1f;
-    }
-
-    public void StopHorizontalMovement()
-    {
-        hMove.x = 0f;
-    }
-
-    public void LiftUp()
-    {
-        StartCoroutine(IncreaseEngineForce());
-    }
-
-    public void StopLift()
+    
+    //Stop action
+    public void StopHelicopterAction()
     {
         StopAllCoroutines();
     }
 
+    //Move forward
+    public void MoveForward()
+    {
+        StartCoroutine(MoveForwardCoroutine());
+        //hMove.y = 1f;
+    }
+    
+    private IEnumerator MoveForwardCoroutine()
+    {
+        while (true)
+        {
+            hMove.y = 0.2f;
+            yield return null;
+        }
+    }
+    
+    //Move backwards
+    public void MoveBackwards()
+    {
+        hMove.y = -1f;
+        StartCoroutine(MoveBackwardsCoroutine());
+    }
+    
+    private IEnumerator MoveBackwardsCoroutine()
+    {
+        while (true)
+        {
+            hMove.y = -0.2f;
+            yield return null;
+        }
+    }
+    
+    public void StopVerticalMovement()
+    {
+        hMove.y = 0f;
+    }
+    
+    //Turn Left
+    public void TurnLeft()
+    {
+        hMove.x = -0.2f;
+    }
+    
+    
+    //Turn Right
+    public void TurnRight()
+    {
+        hMove.x = 0.2f;
+    }
+    
+    public void StopHorizontalMovement()
+    {
+        hMove.x = 0f;
+    }
+    
+    //Lift up
+    public void LiftUp()
+    {
+        StartCoroutine(IncreaseEngineForce());
+    }
+    
     private IEnumerator IncreaseEngineForce()
     {
         while (true)
@@ -101,17 +128,13 @@ public class HelicopterController : MonoBehaviour
             yield return null;
         }
     }
-
+    
+    //Lift down
     public void LiftDown()
     {
         StartCoroutine(DecreaseEngineForce());
     }
-
-    public void StopLiftDown()
-    {
-        StopAllCoroutines();
-    }
-
+    
     private IEnumerator DecreaseEngineForce()
     {
         while (EngineForce > 0)
@@ -121,7 +144,36 @@ public class HelicopterController : MonoBehaviour
             yield return null;
         }
     }
-
+    
+    //Tilt left
+    public void TiltLeft()
+    {
+        StartCoroutine(TiltLeftCoroutine());
+    }
+    
+    private IEnumerator TiltLeftCoroutine()
+    {
+        while (true)
+        {
+            hTilt.x = -TurnTiltForce;
+            yield return null;
+        }
+    }
+    
+    //Tilt right
+    public void TiltRight()
+    {
+        StartCoroutine(TiltRightCoroutine());
+    }
+    
+    private IEnumerator TiltRightCoroutine()
+    {
+        while (true)
+        {
+            hTilt.x = TurnTiltForce;
+            yield return null;
+        }
+    }
     
     private void MoveProcess()
     {
