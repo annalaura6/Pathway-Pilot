@@ -227,5 +227,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9334bc3a6bb2c7847a278dacd53a1a91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hookPoint: {fileID: 7714498931289961502}
-  _pickUpRange: 2
+  hookPoint: {fileID: 7714498931289961502}
+  pickupRange: 2

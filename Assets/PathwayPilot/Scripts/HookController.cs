@@ -2,11 +2,14 @@ using UnityEngine;
 
 public class HookController : MonoBehaviour
 {
-    private GameObject hookedObject; // Reference to the currently hooked object
-
+    [SerializeField] private Transform hookPoint;
+    [SerializeField] private float pickupRange = 2.0f;
+    
+    private GameObject _hookedObject;
+    
     private void Start()
     {
-        HookManager.Instance.RegisterHook(this); // Register this hook with the manager
+        HookManager.Instance.RegisterHook(this);
     }
 
     private void OnDestroy()
@@ -16,23 +19,29 @@ public class HookController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Obstacle") && hookedObject == null)
+        if (other.CompareTag("Obstacle") && _hookedObject == null)
         {
-            hookedObject = other.gameObject;
-            hookedObject.transform.SetParent(transform);
-            hookedObject.GetComponent<Rigidbody>().isKinematic = true; 
+            if (Vector3.Distance(hookPoint.position, other.transform.position) <= pickupRange)
+            {
+                _hookedObject = other.gameObject;
+                _hookedObject.transform.position = hookPoint.position;  
+                _hookedObject.transform.SetParent(hookPoint, true); 
+                _hookedObject.GetComponent<Rigidbody>().isKinematic = true; 
+            }
         }
     }
     
     public void ReleaseObject()
     {
-        if (hookedObject != null)
+        if (_hookedObject != null)
         {
-            hookedObject.transform.SetParent(null);
-            var rb = hookedObject.GetComponent<Rigidbody>();
-            rb.isKinematic = false;
-            rb.detectCollisions = true;
-            hookedObject = null;
+            _hookedObject.transform.SetParent(null);
+            var rb = _hookedObject.GetComponent<Rigidbody>();
+            rb.isKinematic = false; 
+            rb.detectCollisions = true; 
+            var collider = _hookedObject.GetComponent<Collider>();
+            collider.isTrigger = false; 
+            _hookedObject = null;
         }
     }
 }
