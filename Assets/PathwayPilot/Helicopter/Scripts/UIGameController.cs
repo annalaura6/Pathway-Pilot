@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIGameController : MonoBehaviour
@@ -46,6 +47,6 @@ public class UIGameController : MonoBehaviour
 
     public void RestartGame()
     {
-        Application.LoadLevel("Main");
+        SceneManager.LoadScene(0);
     }
 }
