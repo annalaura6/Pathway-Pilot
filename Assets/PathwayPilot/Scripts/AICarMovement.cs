@@ -23,7 +23,9 @@ public class AICarMovement : MonoBehaviour
     [SerializeField] private float raycastHeightOffset = 1.0f;
     
     [SerializeField] private float _detectionRange = 50f;
+    [SerializeField] private AudioSource _honkSound;
 
+    private bool _honkSoundPlayed = false;
     private int _waypointIndex = 0;
     private bool _isObstacleDetected = false;
     private Rigidbody _rb;
@@ -58,6 +60,8 @@ public class AICarMovement : MonoBehaviour
                 _isObstacleDetected = true;
                 distanceToObstacle = hit.distance;
                 Debug.Log($"Obstacle detected at distance: {distanceToObstacle}");
+                
+                PlayHonkSound();
             }
         }
         else
@@ -83,7 +87,16 @@ public class AICarMovement : MonoBehaviour
             _RRWheel.motorTorque = _motorForce;
         }
     }
-    
+
+    private void PlayHonkSound()
+    {
+        if (!_honkSoundPlayed && _honkSound != null)
+        {
+            _honkSound.Play();
+            _honkSoundPlayed = true;
+        }
+    }
+
     private void HandleSteering()
     {
         if (_waypointIndex < _waypoints.Length)
