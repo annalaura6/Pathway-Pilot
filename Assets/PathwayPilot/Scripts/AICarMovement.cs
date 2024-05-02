@@ -4,53 +4,80 @@ using UnityEngine;
 
 public class AICarMovement : MonoBehaviour
 {
-    [SerializeField] private Transform[] _waypoints;
-    [SerializeField] private float _speed = 5f;
-    private int _waypointIndex = 0;
-    private Rigidbody _rb;
-    [SerializeField] private float raycastHeightOffset = 1.0f;  // Height above the car's origin to start the raycast
+    [Header("Wheel Colliders")]
+    [SerializeField] private WheelCollider _FLWheel;
+    [SerializeField] private WheelCollider _FRWheel;
+    [SerializeField] private WheelCollider _RLWheel;
+    [SerializeField] private WheelCollider _RRWheel;
 
-    void Start()
+    [Header("Wheel Transforms")]
+    [SerializeField] private Transform _FLWheelTransform;
+    [SerializeField] private Transform _FRWheelTransform;
+
+    [SerializeField] private Transform[] _waypoints;
+    [SerializeField] private float _motorForce = 50f;
+    [SerializeField] private float _maxSteerAngle = 30f;
+    [SerializeField] private float _breakForce = 100f;
+    [SerializeField] private float raycastHeightOffset = 1.0f;
+
+    private int _waypointIndex = 0;
+    private bool _isObstacleDetected = false;
+
+    private void FixedUpdate()
     {
-        _rb = GetComponent<Rigidbody>();
-        transform.position = _waypoints[0].position;
+        RaycastHit hit;
+        Vector3 rayStart = transform.position + Vector3.up * raycastHeightOffset;
+        Vector3 forward = transform.TransformDirection(Vector3.forward) * 10;
+        Debug.DrawRay(rayStart, forward, Color.green);
+
+        _isObstacleDetected = Physics.Raycast(rayStart, forward, out hit, 10) && hit.collider.CompareTag("Obstacle");
+
+        HandleMotor();
+        HandleSteering();
+        UpdateWheels();
+    }
+
+    private void HandleMotor()
+    {
+        float motorTorque = _isObstacleDetected ? 0 : _motorForce;
+        _RLWheel.motorTorque = motorTorque;
+        _RRWheel.motorTorque = motorTorque;
+        
+        _RLWheel.brakeTorque = _isObstacleDetected ? _breakForce : 0;
+        _RRWheel.brakeTorque = _isObstacleDetected ? _breakForce : 0;
+    }
+
+    private void HandleSteering()
+    {
+        if (_waypointIndex < _waypoints.Length)
+        {
+            Vector3 relativeVector = transform.InverseTransformPoint(_waypoints[_waypointIndex].position);
+            float newSteer = (_maxSteerAngle * (relativeVector.x / relativeVector.magnitude));
+            _FLWheel.steerAngle = newSteer;
+            _FRWheel.steerAngle = newSteer;
+        }
+    }
+
+    private void UpdateWheels()
+    {
+        UpdateWheelPose(_FLWheel, _FLWheelTransform);
+        UpdateWheelPose(_FRWheel, _FRWheelTransform);
+    }
+
+    private void UpdateWheelPose(WheelCollider collider, Transform transform)
+    {
+        Vector3 pos;
+        Quaternion quat;
+        collider.GetWorldPose(out pos, out quat);
+        transform.position = pos;
+        transform.rotation = quat;
     }
 
     void Update()
     {
-        MoveToNextWaypoint();
-    }
-    
-    void FixedUpdate()
-    {
-        RaycastHit hit;
-        Vector3 rayStart = transform.position + Vector3.up * raycastHeightOffset; // Start the ray higher above the ground
-        Vector3 forward = transform.TransformDirection(Vector3.forward) * 10;
-        Debug.DrawRay(rayStart, forward, Color.green);
-
-        if (Physics.Raycast(rayStart, forward, out hit, 10))
+        if (_waypointIndex < _waypoints.Length && !_isObstacleDetected)
         {
-            if (hit.collider.CompareTag("Obstacle"))
-            {
-                _speed = 0; // Stop the car
-            }
-        }
-        else
-        {
-            _speed = 5f; // Resume speed
-        }
-
-        MoveToNextWaypoint();
-    }
-
-    void MoveToNextWaypoint()
-    {
-        if (_waypointIndex < _waypoints.Length)
-        {
-            Vector3 dir = _waypoints[_waypointIndex].position - transform.position;
-            _rb.MovePosition(transform.position + dir.normalized * (_speed * Time.deltaTime));
-
-            if (Vector3.Distance(transform.position, _waypoints[_waypointIndex].position) < 0.5f)
+            if (Vector3.Distance(transform.position, _waypoints[_waypointIndex].position) < 1f)
             {
                 _waypointIndex++;
             }
