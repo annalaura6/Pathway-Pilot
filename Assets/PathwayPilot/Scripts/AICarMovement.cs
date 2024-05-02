@@ -19,6 +19,27 @@ public class AICarMovement : MonoBehaviour
     {
         MoveToNextWaypoint();
     }
+    
+    void FixedUpdate()
+    {
+        RaycastHit hit;
+        Vector3 forward = transform.TransformDirection(Vector3.forward) * 10;
+        Debug.DrawRay(transform.position, forward, Color.green);
+
+        if (Physics.Raycast(transform.position, forward, out hit, 10))
+        {
+            if (hit.collider.CompareTag("Obstacle"))
+            {
+                _speed = 0; // Stop the car
+            }
+        }
+        else
+        {
+            _speed = 5f; // Resume speed
+        }
+
+        MoveToNextWaypoint();
+    }
 
     void MoveToNextWaypoint()
     {
