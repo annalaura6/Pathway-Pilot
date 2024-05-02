@@ -21,6 +21,8 @@ public class AICarMovement : MonoBehaviour
     [SerializeField] private float _maxSteerAngle = 30f;
     [SerializeField] private float _maxBrakeForce = 300f;
     [SerializeField] private float raycastHeightOffset = 1.0f;
+    
+    [SerializeField] private float _detectionRange = 50f;
 
     private int _waypointIndex = 0;
     private bool _isObstacleDetected = false;
@@ -34,17 +36,28 @@ public class AICarMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        HandleMotor(_detectionRange);
+        HandleSteering();
+        UpdateWheels();
+    }
+
+    private void HandleMotor(float detectionRange)
+    {
+        float currentSpeed = _rb.velocity.magnitude;
+        float distanceToObstacle = float.MaxValue;
+
         RaycastHit hit;
         Vector3 rayStart = transform.position + Vector3.up * raycastHeightOffset;
-        Vector3 forward = transform.TransformDirection(Vector3.forward) * 10;
+        Vector3 forward = transform.TransformDirection(Vector3.forward) * detectionRange;
         Debug.DrawRay(rayStart, forward, Color.green);
 
-        if (Physics.Raycast(rayStart, forward, out hit, 10))
+        if (Physics.Raycast(rayStart, forward, out hit, detectionRange))
         {
             if (hit.collider.CompareTag("Obstacle"))
             {
                 _isObstacleDetected = true;
-                Debug.Log("Obstacle detected: Starting to brake");
+                distanceToObstacle = hit.distance;
+                Debug.Log($"Obstacle detected at distance: {distanceToObstacle}");
             }
         }
         else
@@ -52,24 +65,25 @@ public class AICarMovement : MonoBehaviour
             _isObstacleDetected = false;
         }
 
-        HandleMotor();
-        HandleSteering();
-        UpdateWheels();
+        if (_isObstacleDetected)
+        {
+            float brakeForce = Mathf.Lerp(0, _maxBrakeForce, Mathf.Clamp01((detectionRange - distanceToObstacle) / detectionRange));
+            _RLWheel.brakeTorque = brakeForce;
+            _RRWheel.brakeTorque = brakeForce;
+            
+            _RLWheel.motorTorque = 0;
+            _RRWheel.motorTorque = 0;
+            Debug.Log($"Applying brake force: {brakeForce}");
+        }
+        else
+        {
+            _RLWheel.brakeTorque = 0;
+            _RRWheel.brakeTorque = 0;
+            _RLWheel.motorTorque = _motorForce;
+            _RRWheel.motorTorque = _motorForce;
+        }
     }
-
-    private void HandleMotor()
-    {
-        float currentSpeed = _rb.velocity.magnitude;
-        float brakeForce = _isObstacleDetected ? Mathf.Lerp(0, _maxBrakeForce, currentSpeed / 10f) : 0;
-
-        _RLWheel.brakeTorque = brakeForce;
-        _RRWheel.brakeTorque = brakeForce;
-
-        float motorTorque = _isObstacleDetected ? 0 : _motorForce;
-        _RLWheel.motorTorque = motorTorque;
-        _RRWheel.motorTorque = motorTorque;
-    }
-
+    
     private void HandleSteering()
     {
         if (_waypointIndex < _waypoints.Length)
