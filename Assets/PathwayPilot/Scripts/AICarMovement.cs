@@ -8,6 +8,7 @@ public class AICarMovement : MonoBehaviour
     [SerializeField] private float _speed = 5f;
     private int _waypointIndex = 0;
     private Rigidbody _rb;
+    [SerializeField] private float raycastHeightOffset = 1.0f;  // Height above the car's origin to start the raycast
 
     void Start()
     {
@@ -23,10 +24,11 @@ public class AICarMovement : MonoBehaviour
     void FixedUpdate()
     {
         RaycastHit hit;
+        Vector3 rayStart = transform.position + Vector3.up * raycastHeightOffset; // Start the ray higher above the ground
         Vector3 forward = transform.TransformDirection(Vector3.forward) * 10;
-        Debug.DrawRay(transform.position, forward, Color.green);
+        Debug.DrawRay(rayStart, forward, Color.green);
 
-        if (Physics.Raycast(transform.position, forward, out hit, 10))
+        if (Physics.Raycast(rayStart, forward, out hit, 10))
         {
             if (hit.collider.CompareTag("Obstacle"))
             {
